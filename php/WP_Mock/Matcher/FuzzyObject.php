@@ -83,19 +83,18 @@ class FuzzyObject extends MatcherAbstract {
 	}
 
 	/**
-	 * @param object $object1
-	 * @param object $object2
+	 * @param object $actual
+	 * @param object $expected
 	 *
 	 * @return bool
 	 */
-	protected function haveCommonAncestor( $object1, $object2 ) {
-		$class1 = get_class( $object1 );
-		$class2 = get_class( $object2 );
-		if ( $class1 === $class2 ) {
+	protected function haveCommonAncestor( $actual, $expected ) {
+		$actualClass = get_class( $actual );
+		$expectedClass = get_class( $expected );
+		if ( $actualClass === $expectedClass ) {
 			return true;
 		}
-		$inheritance1 = class_parents( $class1 );
-		$inheritance2 = class_parents( $class2 );
-        return in_array( $class1, $inheritance2 ) || in_array( $class2, $inheritance1 );
+		$actualParentsList = class_parents( $actualClass );
+        return in_array( $expectedClass, $actualParentsList );
     }
 }
