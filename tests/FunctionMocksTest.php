@@ -28,6 +28,8 @@ class FunctionMocksTest extends \PHPUnit\Framework\TestCase {
 	}
 
 	/**
+	 * @covers \WP_Mock::bootstrap()
+	 *
 	 * @runInSeparateProcess
 	 * @preserveGlobalState disabled
 	 */
@@ -42,6 +44,7 @@ class FunctionMocksTest extends \PHPUnit\Framework\TestCase {
 	}
 
 	/**
+	 * @covers \WP_Mock::userFunction()
 	 * @dataProvider dataCommonFunctionsDefaultFunctionality
 	 */
 	public function testCommonFunctionsDefaultFunctionality( $function, $action ) {
@@ -50,15 +53,23 @@ class FunctionMocksTest extends \PHPUnit\Framework\TestCase {
 			$this->expectOutputString( $input );
 			$expected = null;
 		}
-		$this->assertEquals( $expected, call_user_func( $function, $input ) );
+
+		if ('_n' === $function) {
+			$this->assertEquals($expected, call_user_func($function, $input, 'foo', 1, 'bar'));
+		} else {
+			$this->assertEquals($expected, call_user_func($function, $input));
+		}
 	}
 
 	/**
+	 * @covers \WP_Mock::activateStrictMode()
+	 * @covers \WP_Mock::bootstrap()
+	 *
 	 * @runInSeparateProcess
 	 * @preserveGlobalState disabled
 	 */
 	public function testDefaultFailsInStrictMode() {
-		$this->expectExceptionMessageRegExp('/No handler found for \w+/');
+		$this->expectExceptionMessageMatches('/No handler found for \w+/');
 		$this->expectException('\PHPUnit\Framework\ExpectationFailedException');
 		WP_Mock::activateStrictMode();
 		WP_Mock::bootstrap();
@@ -71,12 +82,22 @@ class FunctionMocksTest extends \PHPUnit\Framework\TestCase {
 		}, $this->common_functions );
 	}
 
+	/**
+	 * @covers \WP_Mock::userFunction()
+	 *
+	 * @return void
+	 */
 	public function testMockingOverridesDefaults() {
 		$this->assertEquals( 'Input', __( 'Input' ) );
 		WP_Mock::userFunction( '__' )->andReturn( 'Output' );
 		$this->assertEquals( 'Output', __( 'Input' ) );
 	}
 
+	/**
+	 * @covers \WP_Mock::userFunction()
+	 *
+	 * @return void
+	 */
 	public function testBotchedMocksStillOverrideDefault() {
 		WP_Mock::userFunction( 'esc_html' );
 		$this->assertEmpty( esc_html( 'Input' ) );

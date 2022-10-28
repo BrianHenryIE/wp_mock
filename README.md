@@ -6,16 +6,16 @@
 
 ## Table of Contents
 * [Installation](#installation)
-* [Bootstrapping WP_Mock](#bootstrapping-wp_mock)
+  * [Bootstrapping WP_Mock](#bootstrapping-wp_mock)
   * [Strict Mode](#strict-mode)
 * [Using WP_Mock](#using-wp_mock)
   * [Mocking WordPress core functions](#mocking-wordpress-core-functions)
   * [Using Mockery expectations](#using-mockery-expectations)
   * [Passthru functions](#passthru-functions)
-  * [Running Locally](#running-locally)
   * [Deprecated methods](#deprecated-methods)
   * [Mocking actions and filters](#mocking-actions-and-filters)
   * [Mocking WordPress objects](#mocking-wordpress-objects)
+  * [Mocking constants](#mocking-constants)
 * [Changelog](#changelog)
 * [Contributing](#contributing)
 
@@ -37,27 +37,30 @@ Finally, register calls inside your test class to instantiate and clean up the `
 
 ```php
 class MyTestClass extends \WP_Mock\Tools\TestCase {
-	public function setUp() {
+	public function setUp(): void {
 		\WP_Mock::setUp();
 	}
 
-	public function tearDown() {
+	public function tearDown(): void {
 		\WP_Mock::tearDown();
 	}
 }
 ```
 
-## Bootstrapping WP_Mock
+### Bootstrapping WP_Mock
 
-Before you can start using WP_Mock to test your code, you'll need to bootstrap the library. The easiest way is to use a bootstrap file. See the PHPUnit documentation for how to define a bootstrap script either [from the command line](https://phpunit.de/manual/current/en/textui.html#textui.clioptions) or [from the xml config file](https://phpunit.de/manual/current/en/appendixes.configuration.html). Here is an example of a bootstrap you might use:
+#### bootstrap.php
+Before you can start using WP_Mock to test your code, you'll need to bootstrap the library by creating a `bootstrap.php` file. 
+
+Here is an example of a bootstrap you might use:
 
 ```php
 <?php
 
-// First we need to load the composer autoloader so we can use WP Mock
+// First we need to load the composer autoloader, so we can use WP Mock
 require_once __DIR__ . '/vendor/autoload.php';
 
-// Now call the bootstrap method of WP Mock
+// Bootstrap WP_Mock to initialize built-in features
 WP_Mock::bootstrap();
 
 /**
@@ -69,9 +72,30 @@ require_once __DIR__ . '/plugin.php';
 
 The bootstrap method does a few things:
 
-- Defines action and filter functions
-- Defines some common WordPress constants
-- Sets up Patchwork if it has been turned on
+- Bootstraps `WP_Mock` which defines action and filter functions, as well as common WordPress constants
+- Sets up Patchwork if it has been turned on ([see below](#patchwork))
+- Include any custom files you need to run the test.
+
+
+#### Using bootstrap.php
+
+**CLI**
+
+Run `phpunit` with the `--bootstrap` flag (see [documentation]()):
+```bash
+./vendor/bin/phpunit --bootstrap /path/to/bootstrap.php
+```
+
+**phpunit.xml**
+
+Add the following to `phpunit.xml` (see [documentation](https://phpunit.de/manual/current/en/appendixes.configuration.html).):
+```
+bootstrap="/path/to/bootstrap.php"
+```
+
+#### Patchwork
+
+[Patchwork](https://github.com/antecedent/patchwork) is a library that enables temporarily overwriting user-defined functions and static methods. This means you can better isolate your system under test by mocking your plugin's functions that are tested elsewhere. If Patchwork is turned on, WP_Mock will transparently use it behind the scenes. For most use cases, you won't need to worry about using it directly.
 
 If you'd like to use Patchwork in your tests, you need to specifically turn it on before bootstrapping WP_Mock:
 
@@ -79,8 +103,6 @@ If you'd like to use Patchwork in your tests, you need to specifically turn it o
 WP_Mock::setUsePatchwork( true );
 WP_Mock::bootstrap();
 ```
-
-Patchwork is a library that enables temporarily overwriting user-defined functions and static methods. This means you can better isolate your system under test by mocking your plugin's functions that are tested elsewhere. If Patchwork is turned on, WP_Mock will transparently use it behind the scenes. For most use cases, you won't need to worry about using it directly.
 
 ### Strict Mode
 
@@ -409,17 +431,48 @@ function test_get_post_ids() {
 }
 ```
 
+### Mocking constants
+
+Certain constants need to be mocked, otherwise various WordPress functions will attempt to include files that just don't exist.
+
+For example, nearly all uses of the `WP_Http` API require first including:
+
+```
+ABSPATH . WPINC . '/class-http.php'
+```
+
+If these constants are not set, and files do not exist at the location they specify, functions referencing them will fatally err.
+
+By default, WP_Mock will [mock the following constants](./php/WP_Mock/API/constant-mocks.php):
+
+| Constant         | Default mocked value                   |
+|------------------|----------------------------------------|
+| `WP_CONTENT_DIR` | `__DIR__ . '/dummy-files'`             |
+| `ABSPATH`        | `''`                                   |
+| `WPINC`          | `__DIR__ . '/dummy-files/wp-includes'` |
+| `EZSQL_VERSION`  | `'WP1.25'`                             |
+| `OBJECT`         | `'OBJECT'`                             |
+| `Object`         | `'OBJECT'`                             |
+| `object`         | `'OBJECT'`                             |
+| `OBJECT_K`       | `'OBJECT_K'`                           |
+| `ARRAY_A`        | `'ARRAY_A'`                            |
+| `ARRAY_N`        | `'ARRAY_N'`                            |
+
+WP_Mock provides a few dummy files, located in the `./php/WP_Mock/API/dummy-files/` directory. These files are used to mock the `WP_CONTENT_DIR` and `WPINC` constants, as shown in the table above.
+
+The `! defined` check is used for all constants, so that individual test environments can override the normal default by setting constants in a bootstrap configuration file.
+
 ## Support Level
 
 **Active:** 10up is actively working on this, and we expect to continue work for the foreseeable future including keeping tested up to the most recent version of WordPress.  Bug reports, feature requests, questions, and pull requests are welcome.
 
 ## Changelog
 
-A complete listing of all notable changes to WP_Mock are documented in [CHANGELOG.md](https://github.com/10up/wp_mock/blob/develop/CHANGELOG.md).
+A complete listing of all notable changes to WP_Mock are documented in [CHANGELOG.md](https://github.com/10up/wp_mock/blob/trunk/CHANGELOG.md).
 
 ## Contributing
 
-Please read [CODE_OF_CONDUCT.md](https://github.com/10up/wp_mock/blob/develop/CODE_OF_CONDUCT.md) for details on our code of conduct, [CONTRIBUTING.md](https://github.com/10up/wp_mock/blob/develop/CONTRIBUTING.md) for details on the process for submitting pull requests to us, and [CREDITS.md](https://github.com/10up/wp_mock/blob/develop/CREDITS.md) for a listing of maintainers of, contributors to, and libraries used by Apple Maps for WordPress.
+Please read [CODE_OF_CONDUCT.md](https://github.com/10up/wp_mock/blob/trunk/CODE_OF_CONDUCT.md) for details on our code of conduct, [CONTRIBUTING.md](https://github.com/10up/wp_mock/blob/trunk/CONTRIBUTING.md) for details on the process for submitting pull requests to us, and [CREDITS.md](https://github.com/10up/wp_mock/blob/trunk/CREDITS.md) for a listing of maintainers of, contributors to, and libraries used by WP_Mock.
 
 ## Like what you see?
 
