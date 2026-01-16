@@ -20,7 +20,7 @@
         "php-stubs/wordpress-globals": "^0.2",
         "php-stubs/wordpress-stubs": "^6.3",
         "friendsofphp/php-cs-fixer": "^3.4",
-        "dealerdirect/phpcodesniffer-composer-installer": "^0.7"
+        "dealerdirect/phpcodesniffer-composer-installer": "^1"
     },
     "autoload": {
         "psr-4": {
