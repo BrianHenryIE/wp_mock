@@ -23,7 +23,7 @@ final class ReturnSequenceTest extends WP_MockTestCase
         $returnSequence = new ReturnSequence('foo', 'bar');
         $property = new ReflectionProperty(ReturnSequence::class, 'returnValues');
         if(!version_compare(PHP_VERSION, '8.5', '>=')){
-            $method->setAccessible(true);
+            $property->setAccessible(true);
         }
 
         $this->assertSame(['foo', 'bar'], $property->getValue($returnSequence));

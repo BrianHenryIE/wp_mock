@@ -55,7 +55,7 @@ final class DeprecatedMethodListenerTest extends WP_MockTestCase
     {
         $property = new ReflectionProperty($this->object, 'testName');
         if(!version_compare(PHP_VERSION, '8.5', '>=')){
-            $method->setAccessible(true);
+            $property->setAccessible(true);
         }
 
         $this->assertSame('test', $property->getValue($this->object));
@@ -80,7 +80,7 @@ final class DeprecatedMethodListenerTest extends WP_MockTestCase
 
         $property = new ReflectionProperty($this->object, 'testCase');
         if(!version_compare(PHP_VERSION, '8.5', '>=')){
-            $method->setAccessible(true);
+            $property->setAccessible(true);
         }
 
         $this->assertSame($testCase, $property->getValue($this->object));
@@ -102,7 +102,7 @@ final class DeprecatedMethodListenerTest extends WP_MockTestCase
 
         $property = new ReflectionProperty($this->object, 'testResult');
         if(!version_compare(PHP_VERSION, '8.5', '>=')){
-            $method->setAccessible(true);
+            $property->setAccessible(true);
         }
 
         $this->assertSame($mockTestResult, $property->getValue($this->object));
