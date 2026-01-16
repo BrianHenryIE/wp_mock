@@ -15,7 +15,7 @@
         "php-coveralls/php-coveralls": "^v2.7",
         "phpstan/phpstan": "^1|^2",
         "phpstan/phpstan-phpunit": "^1|^2",
-        "phpstan/phpstan-mockery": "^1.1",
+        "phpstan/phpstan-mockery": "^1.1.1|^2",
         "phpcompatibility/php-compatibility": "^9.3",
         "php-stubs/wordpress-globals": "^0.2",
         "php-stubs/wordpress-stubs": "^6.3",
