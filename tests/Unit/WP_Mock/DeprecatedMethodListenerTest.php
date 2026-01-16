@@ -54,7 +54,9 @@ final class DeprecatedMethodListenerTest extends WP_MockTestCase
     public function testCanSetTestName(): void
     {
         $property = new ReflectionProperty($this->object, 'testName');
-        $property->setAccessible(true);
+        if(!version_compare(PHP_VERSION, '8.5', '>=')){
+            $method->setAccessible(true);
+        }
 
         $this->assertSame('test', $property->getValue($this->object));
 
@@ -77,7 +79,9 @@ final class DeprecatedMethodListenerTest extends WP_MockTestCase
         $this->assertSame($this->object, $this->object->setTestCase($testCase));
 
         $property = new ReflectionProperty($this->object, 'testCase');
-        $property->setAccessible(true);
+        if(!version_compare(PHP_VERSION, '8.5', '>=')){
+            $method->setAccessible(true);
+        }
 
         $this->assertSame($testCase, $property->getValue($this->object));
     }
@@ -97,7 +101,9 @@ final class DeprecatedMethodListenerTest extends WP_MockTestCase
         $this->assertSame($this->object, $this->object->setTestResult($mockTestResult));
 
         $property = new ReflectionProperty($this->object, 'testResult');
-        $property->setAccessible(true);
+        if(!version_compare(PHP_VERSION, '8.5', '>=')){
+            $method->setAccessible(true);
+        }
 
         $this->assertSame($mockTestResult, $property->getValue($this->object));
     }
@@ -266,7 +272,9 @@ EOT;
         $instance->logDeprecatedCall('Foo::bar', ['baz']);
 
         $method = new ReflectionMethod($instance, 'buildErrorMessage');
-        $method->setAccessible(true);
+        if(!version_compare(PHP_VERSION, '8.5', '>=')){
+            $method->setAccessible(true);
+        }
 
         $expectedMessage = 'Deprecated WP Mock calls inside MyTest:'."\n  ".'Foo::bar ["baz"]';
 
@@ -286,7 +294,9 @@ EOT;
         $instance->logDeprecatedCall('Boz::qux');
 
         $method = new ReflectionMethod($instance, 'getDeprecatedMethods');
-        $method->setAccessible(true);
+        if(!version_compare(PHP_VERSION, '8.5', '>=')){
+            $method->setAccessible(true);
+        }
 
         $this->assertSame(['Foo::bar', 'Boz::qux'], $method->invoke($instance));
     }
@@ -304,7 +314,9 @@ EOT;
         $instance->logDeprecatedCall('Boz::qux');
 
         $method = new ReflectionMethod($instance, 'getDeprecatedMethodsWithArgs');
-        $method->setAccessible(true);
+        if(!version_compare(PHP_VERSION, '8.5', '>=')){
+            $method->setAccessible(true);
+        }
 
         $expected = [
             'Foo::bar' => [
@@ -331,7 +343,9 @@ EOT;
     {
         $instance = new DeprecatedMethodListener();
         $method = new ReflectionMethod($instance, 'toScalar');
-        $method->setAccessible(true);
+        if(!version_compare(PHP_VERSION, '8.5', '>=')){
+            $method->setAccessible(true);
+        }
 
         $result = $method->invokeArgs($instance, [$arg]);
 
@@ -422,7 +436,9 @@ EOT;
     protected function getDeprecatedMethodCalls(DeprecatedMethodListener $listener): array
     {
         $property = new ReflectionProperty($listener, 'deprecatedCalls');
-        $property->setAccessible(true);
+        if(!version_compare(PHP_VERSION, '8.5', '>=')){
+            $property->setAccessible(true);
+        }
 
         $value = $property->getValue($listener);
 

@@ -68,7 +68,9 @@ final class TestCaseTest extends WP_MockTestCase
             ->method('cleanGlobals');
 
         $property = new ReflectionProperty($instance, 'mockedStaticMethods');
-        $property->setAccessible(true);
+        if(!version_compare(PHP_VERSION, '8.5', '>=')){
+            $property->setAccessible(true);
+        }
         $property->setValue($instance, ['foo' => 'bar']);
 
         $instance->tearDown();
@@ -137,7 +139,9 @@ final class TestCaseTest extends WP_MockTestCase
 
         $instance = $this->getMockForAbstractClass(TestCase::class);
         $method = new ReflectionMethod($instance, 'checkDeprecatedCalls');
-        $method->setAccessible(true);
+        if(!version_compare(PHP_VERSION, '8.5', '>=')){
+            $method->setAccessible(true);
+        }
         $method->invoke($instance);
     }
 
@@ -156,7 +160,9 @@ final class TestCaseTest extends WP_MockTestCase
 
         $instance = $this->getMockForAbstractClass(TestCase::class);
         $method = new ReflectionMethod($instance, 'cleanGlobals');
-        $method->setAccessible(true);
+        if(!version_compare(PHP_VERSION, '8.5', '>=')){
+            $method->setAccessible(true);
+        }
         $method->invoke($instance);
 
         $this->assertNull($GLOBALS['post'] ?? null);
@@ -174,12 +180,16 @@ final class TestCaseTest extends WP_MockTestCase
         $instance = $this->getMockForAbstractClass(TestCase::class);
 
         $property = new ReflectionProperty($instance, '__contentFilterCallback');
-        $property->setAccessible(true);
+        if(!version_compare(PHP_VERSION, '8.5', '>=')){
+            $property->setAccessible(true);
+        }
 
         $this->assertFalse($property->getValue($instance));
 
         $method = new ReflectionMethod($instance, 'setUpContentFiltering');
-        $method->setAccessible(true);
+        if(!version_compare(PHP_VERSION, '8.5', '>=')){
+            $method->setAccessible(true);
+        }
         $method->invoke($instance);
 
         $this->assertSame([$instance, 'stripTabsAndNewlines'], $property->getValue($instance));
@@ -315,7 +325,9 @@ final class TestCaseTest extends WP_MockTestCase
 
         if ($expectException) {
             $property = new ReflectionProperty($instance, '__contentFilterCallback');
-            $property->setAccessible(true);
+            if(!version_compare(PHP_VERSION, '8.5', '>=')){
+                $property->setAccessible(true);
+            }
             $property->setValue($instance, function () {
                 return false;
             });
@@ -382,7 +394,9 @@ final class TestCaseTest extends WP_MockTestCase
 
         $instance = $this->getMockForAbstractClass(TestCase::class);
         $method = new ReflectionMethod($instance, 'mockStaticMethod');
-        $method->setAccessible(true);
+        if(!version_compare(PHP_VERSION, '8.5', '>=')){
+            $method->setAccessible(true);
+        }
 
         if (! $usingPatchwork || $invalidMethod) {
             $this->expectException(Exception::class);

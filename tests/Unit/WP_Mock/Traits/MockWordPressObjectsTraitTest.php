@@ -45,7 +45,9 @@ final class MockWordPressObjectsTraitTest extends WP_MockTestCase
         ];
 
         $method = new ReflectionMethod($trait, 'mockPost');
-        $method->setAccessible(true);
+        if(!version_compare(PHP_VERSION, '8.5', '>=')){
+            $method->setAccessible(true);
+        }
 
         $post = $method->invokeArgs($trait, [$postData]);
 
@@ -68,7 +70,9 @@ final class MockWordPressObjectsTraitTest extends WP_MockTestCase
         $trait = $this->getMockForTrait(MockWordPressObjectsTrait::class);
 
         $method = new ReflectionMethod($trait, 'mockWp');
-        $method->setAccessible(true);
+        if(!version_compare(PHP_VERSION, '8.5', '>=')){
+            $method->setAccessible(true);
+        }
 
         $wp = $method->invokeArgs($trait, [['foo' => 'bar']]);
 

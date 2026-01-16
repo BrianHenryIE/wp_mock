@@ -48,7 +48,9 @@ final class ExpectationsMetTest extends WP_MockTestCase
     {
         $constraint = new ExpectationsMet();
         $method = new ReflectionMethod($constraint, 'failureDescription');
-        $method->setAccessible(true);
+        if(!version_compare(PHP_VERSION, '8.5', '>=')){
+            $method->setAccessible(true);
+        }
 
         $this->assertSame('WP_Mock expectations are met', $method->invokeArgs($constraint, [null]));
     }
@@ -63,9 +65,13 @@ final class ExpectationsMetTest extends WP_MockTestCase
     {
         $constraint = new ExpectationsMet();
         $method = new ReflectionMethod($constraint, 'additionalFailureDescription');
-        $method->setAccessible(true);
+        if(!version_compare(PHP_VERSION, '8.5', '>=')){
+            $method->setAccessible(true);
+        }
         $property = new ReflectionProperty($constraint, 'failureDescription');
-        $property->setAccessible(true);
+        if(!version_compare(PHP_VERSION, '8.5', '>=')){
+            $property->setAccessible(true);
+        }
 
         $property->setValue($constraint, "\n\nTest\r");
 

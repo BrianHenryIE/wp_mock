@@ -27,7 +27,9 @@ trait AccessInaccessibleClassMembersTrait
         $class = new ReflectionClass($class);
 
         $method = $class->getMethod($methodName);
-        $method->setAccessible(true);
+        if(!version_compare(PHP_VERSION, '8.5', '>=')){
+            $method->setAccessible(true);
+        }
 
         return $method;
     }
@@ -61,7 +63,9 @@ trait AccessInaccessibleClassMembersTrait
         $class = new ReflectionClass($class);
 
         $property = $class->getProperty($propertyName);
-        $property->setAccessible(true);
+        if(!version_compare(PHP_VERSION, '8.5', '>=')){
+            $property->setAccessible(true);
+        }
 
         return $property;
     }
@@ -96,7 +100,9 @@ trait AccessInaccessibleClassMembersTrait
         $class = new ReflectionClass($class);
 
         $property = $class->getProperty($property);
-        $property->setAccessible(true);
+        if(!version_compare(PHP_VERSION, '8.5', '>=')){
+            $property->setAccessible(true);
+        }
         $property->setValue($instance, $value);
 
         return $property;

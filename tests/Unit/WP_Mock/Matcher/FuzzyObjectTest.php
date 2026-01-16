@@ -191,7 +191,9 @@ final class FuzzyObjectTest extends TestCase
     {
         $instance = new FuzzyObject(new SampleClass());
         $method = new ReflectionMethod($instance, 'haveCommonAncestor');
-        $method->setAccessible(true);
+        if(!version_compare(PHP_VERSION, '8.5', '>=')){
+            $method->setAccessible(true);
+        }
         $result = $method->invoke($instance, $object1, $object2);
 
         $this->assertSame($expectedResult, $result);

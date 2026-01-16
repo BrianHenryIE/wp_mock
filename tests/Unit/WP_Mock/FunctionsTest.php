@@ -35,22 +35,30 @@ final class FunctionsTest extends WP_MockTestCase
         $functions = new Functions();
 
         $mockedFunctions = new ReflectionProperty($functions, 'mockedFunctions');
-        $mockedFunctions->setAccessible(true);
+        if(!version_compare(PHP_VERSION, '8.5', '>=')){
+            $mockedFunctions->setAccessible(true);
+        }
 
         $this->assertSame([], $mockedFunctions->getValue($functions));
 
         $internalFunctions = new ReflectionProperty($functions, 'internalFunctions');
-        $internalFunctions->setAccessible(true);
+        if(!version_compare(PHP_VERSION, '8.5', '>=')){
+            $internalFunctions->setAccessible(true);
+        }
 
         $this->assertSame([], $internalFunctions->getValue($functions));
 
         $patchworkFunctions = new ReflectionProperty($functions, 'patchworkFunctions');
-        $patchworkFunctions->setAccessible(true);
+        if(!version_compare(PHP_VERSION, '8.5', '>=')){
+            $patchworkFunctions->setAccessible(true);
+        }
 
         $this->assertSame([], $patchworkFunctions->getValue($functions));
 
         $userMockedFunctions = new ReflectionProperty($functions, 'userMockedFunctions');
-        $userMockedFunctions->setAccessible(true);
+        if(!version_compare(PHP_VERSION, '8.5', '>=')){
+            $userMockedFunctions->setAccessible(true);
+        }
 
         $this->assertSame([
             '__',
@@ -91,7 +99,9 @@ final class FunctionsTest extends WP_MockTestCase
     public function testCanRegister(): void
     {
         $handler = new ReflectionProperty(Handler::class, 'handlers');
-        $handler->setAccessible(true);
+        if(!version_compare(PHP_VERSION, '8.5', '>=')){
+            $handler->setAccessible(true);
+        }
 
         $this->assertSame([], $handler->getValue());
 
@@ -129,42 +139,56 @@ final class FunctionsTest extends WP_MockTestCase
     {
         $functions = new Functions();
         $method = new ReflectionMethod($functions, 'setUpMock');
-        $method->setAccessible(true);
+        if(!version_compare(PHP_VERSION, '8.5', '>=')){
+            $method->setAccessible(true);
+        }
         $mock = new Mock();
 
         /** @var CompositeExpectation $compositeExpectation */
         $compositeExpectation = $method->invokeArgs($functions, [$mock, 'myWpFunction', $expectationArgs]);
         $expectations = new ReflectionProperty($compositeExpectation, '_expectations');
-        $expectations->setAccessible(true);
+        if(!version_compare(PHP_VERSION, '8.5', '>=')){
+            $expectations->setAccessible(true);
+        }
         /** @var Expectation $expectation */
         $expectation = current((array) $expectations->getValue($compositeExpectation));
 
         $expectedName = new ReflectionProperty($expectation, '_name');
-        $expectedName->setAccessible(true);
+        if(!version_compare(PHP_VERSION, '8.5', '>=')){
+            $expectedName->setAccessible(true);
+        }
 
         $this->assertSame('myWpFunction', $expectedName->getValue($expectation));
 
         $expectedCountValidators = new ReflectionProperty($expectation, '_countValidators');
-        $expectedCountValidators->setAccessible(true);
+        if(!version_compare(PHP_VERSION, '8.5', '>=')){
+            $expectedCountValidators->setAccessible(true);
+        }
 
         if (! empty($expectationArgs['times'])) {
             /** @var Exact $expectedTimes */
             $expectedTimes = current((array) $expectedCountValidators->getValue($expectation));
             $expectedLimit = new ReflectionProperty($expectedTimes, '_limit');
-            $expectedLimit->setAccessible(true);
+            if(!version_compare(PHP_VERSION, '8.5', '>=')){
+                $expectedLimit->setAccessible(true);
+            }
 
             $this->assertSame($expectationArgs['times'], current((array) $expectedLimit->getValue($expectedTimes)));
         }
 
         $expectedArgs = new ReflectionProperty($expectation, '_expectedArgs');
-        $expectedArgs->setAccessible(true);
+        if(!version_compare(PHP_VERSION, '8.5', '>=')){
+            $expectedArgs->setAccessible(true);
+        }
 
         if (! empty($expectationArgs['args'])) {
             $this->assertSame($expectationArgs['args'], $expectedArgs->getValue($expectation));
         }
 
         $expectedReturnQueue = new ReflectionProperty($expectation, '_returnQueue');
-        $expectedReturnQueue->setAccessible(true);
+        if(!version_compare(PHP_VERSION, '8.5', '>=')){
+            $expectedReturnQueue->setAccessible(true);
+        }
 
         if (! empty($expectationArgs['return'])) {
             $this->assertSame($expectationArgs['return'], current((array) $expectedReturnQueue->getValue($expectation)));
@@ -216,7 +240,9 @@ final class FunctionsTest extends WP_MockTestCase
             ->willReturn($willReplace);
 
         $method = new ReflectionMethod($functions, 'generateFunction');
-        $method->setAccessible(true);
+        if(!version_compare(PHP_VERSION, '8.5', '>=')){
+            $method->setAccessible(true);
+        }
         $method->invokeArgs($functions, [$functionName]);
     }
 
@@ -248,11 +274,15 @@ final class FunctionsTest extends WP_MockTestCase
         $functions = new Functions();
 
         $userMockedFunctions = new ReflectionProperty($functions, 'userMockedFunctions');
-        $userMockedFunctions->setAccessible(true);
+        if(!version_compare(PHP_VERSION, '8.5', '>=')){
+            $userMockedFunctions->setAccessible(true);
+        }
         $userMockedFunctions->setValue($functions, $functionsList);
 
         $createFunction = new ReflectionMethod($functions, 'createFunction');
-        $createFunction->setAccessible(true);
+        if(!version_compare(PHP_VERSION, '8.5', '>=')){
+            $createFunction->setAccessible(true);
+        }
 
         $this->assertSame($expectedReturnValue, $createFunction->invokeArgs($functions, [$functionName]));
         $this->assertSame($functionWillExist, function_exists($functionName));
@@ -284,11 +314,15 @@ final class FunctionsTest extends WP_MockTestCase
         $functions = new Functions();
 
         $property = new ReflectionProperty($functions, 'patchworkFunctions');
-        $property->setAccessible(true);
+        if(!version_compare(PHP_VERSION, '8.5', '>=')){
+            $property->setAccessible(true);
+        }
         $this->assertSame([], $property->getValue($functions));
 
         $method = new ReflectionMethod($functions, 'replaceFunction');
-        $method->setAccessible(true);
+        if(!version_compare(PHP_VERSION, '8.5', '>=')){
+            $method->setAccessible(true);
+        }
 
         $this->assertTrue($method->invokeArgs($functions, ['myWpMockFunction']));
         $this->assertSame(['myWpMockFunction'], $property->getValue($functions));
@@ -304,7 +338,9 @@ final class FunctionsTest extends WP_MockTestCase
     {
         $functions = new Functions();
         $method = new ReflectionMethod($functions, 'sanitizeFunctionName');
-        $method->setAccessible(true);
+        if(!version_compare(PHP_VERSION, '8.5', '>=')){
+            $method->setAccessible(true);
+        }
 
         $this->assertSame('Name\Space\myFunction', $method->invokeArgs($functions, ['Name\\Space\\myFunction']));
         $this->assertSame('myFunction', $method->invokeArgs($functions, ['\\myFunction']));
@@ -328,7 +364,9 @@ final class FunctionsTest extends WP_MockTestCase
 
         $functions = new Functions();
         $method = new ReflectionMethod($functions, 'validateFunctionName');
-        $method->setAccessible(true);
+        if(!version_compare(PHP_VERSION, '8.5', '>=')){
+            $method->setAccessible(true);
+        }
         $method->invokeArgs($functions, [$functionName]);
 
         $this->assertConditionsMet();
