@@ -137,7 +137,7 @@ final class TestCaseTest extends WP_MockTestCase
         $wpMock->shouldReceive('getDeprecatedMethodListener')
             ->andReturn($deprecatedMethodListener);
 
-        $instance = $this->getMockForAbstractClass(TestCase::class);
+        $instance = new class(__METHOD__) extends WP_Mock\Tools\TestCase{};
         $method = new ReflectionMethod($instance, 'checkDeprecatedCalls');
         if(!version_compare(PHP_VERSION, '8.5', '>=')){
             $method->setAccessible(true);
@@ -158,7 +158,7 @@ final class TestCaseTest extends WP_MockTestCase
         $post = 'foo';
         $wp_query = 'bar';
 
-        $instance = $this->getMockForAbstractClass(TestCase::class);
+        $instance = new class(__METHOD__) extends WP_Mock\Tools\TestCase{};
         $method = new ReflectionMethod($instance, 'cleanGlobals');
         if(!version_compare(PHP_VERSION, '8.5', '>=')){
             $method->setAccessible(true);
@@ -177,7 +177,7 @@ final class TestCaseTest extends WP_MockTestCase
      */
     public function testCanSetUpContentFiltering(): void
     {
-        $instance = $this->getMockForAbstractClass(TestCase::class);
+        $instance = new class(__METHOD__) extends WP_Mock\Tools\TestCase{};
 
         $property = new ReflectionProperty($instance, '__contentFilterCallback');
         if(!version_compare(PHP_VERSION, '8.5', '>=')){
@@ -203,7 +203,7 @@ final class TestCaseTest extends WP_MockTestCase
      */
     public function testCanStripTabsAndNewlinesForContentFiltering(): void
     {
-        $instance = $this->getMockForAbstractClass(TestCase::class);
+        $instance = new class(__METHOD__) extends WP_Mock\Tools\TestCase{};
 
         $this->assertSame('Test', $instance->stripTabsAndNewlines("\n\n\tTest\r\t"));
     }
@@ -218,9 +218,10 @@ final class TestCaseTest extends WP_MockTestCase
      * @param bool $throwsException
      * @return void
      * @throws Exception
-     */public function testCanAssertExpectedActionsWereCalled(bool $throwsException): void
+     */
+    public function testCanAssertExpectedActionsWereCalled(bool $throwsException): void
     {
-        $instance = $this->getMockForAbstractClass(TestCase::class);
+        $instance = new class(__METHOD__) extends WP_Mock\Tools\TestCase{};
 
         /** @var Mockery\Mock $wpMock */
         $wpMock = Mockery::mock('overload:WP_Mock');
@@ -256,7 +257,7 @@ final class TestCaseTest extends WP_MockTestCase
      */
     public function testCanAssertExpectedHooksWereAdded(bool $throwsException): void
     {
-        $instance = $this->getMockForAbstractClass(TestCase::class);
+        $instance = new class(__METHOD__) extends WP_Mock\Tools\TestCase{};
 
         /** @var Mockery\Mock $wpMock */
         $wpMock = Mockery::mock('overload:WP_Mock');
@@ -282,18 +283,14 @@ final class TestCaseTest extends WP_MockTestCase
     /**
      * @covers \WP_Mock\Tools\TestCase::assertCurrentConditionsMet()
      *
+     * This deprecated function just calls {@see \WP_Mock\Tools\TestCase::assertConditionsMet()}
+     *
      * @return void
      * @throws Exception
      */
     public function testCanAssertCurrentTestConditionsWereMet(): void
     {
-        $instance = $this->getMockForAbstractClass(TestCase::class, [], '', true, true, true, [
-            'assertConditionsMet'
-        ]);
-
-        $instance->expects($this->once())
-            ->method('assertConditionsMet')
-            ->with('test');
+        $instance = new class(__METHOD__) extends WP_Mock\Tools\TestCase{};
 
         $instance->assertCurrentConditionsMet('test');
     }
@@ -305,7 +302,7 @@ final class TestCaseTest extends WP_MockTestCase
      */
     public function testCanAssertTestConditionsWereMet(): void
     {
-        $instance = $this->getMockForAbstractClass(TestCase::class);
+        $instance = new class(__METHOD__) extends WP_Mock\Tools\TestCase{};
 
         // this will intentionally always pass and there are no assertions to be made
         $instance->assertConditionsMet('test');
@@ -321,7 +318,7 @@ final class TestCaseTest extends WP_MockTestCase
      */
     public function testCanExpectOutputString(bool $expectException): void
     {
-        $instance = $this->getMockForAbstractClass(TestCase::class);
+        $instance = new class(__METHOD__) extends WP_Mock\Tools\TestCase{};
 
         if ($expectException) {
             $property = new ReflectionProperty($instance, '__contentFilterCallback');
@@ -356,7 +353,7 @@ final class TestCaseTest extends WP_MockTestCase
      */
     public function testCanAssertEqualsHtml(): void
     {
-        $instance = $this->getMockForAbstractClass(TestCase::class);
+        $instance = new class(__METHOD__) extends WP_Mock\Tools\TestCase{};
 
         $instance->assertEqualsHtml('<p>test</p>', "<p>test</p>");
 
@@ -392,7 +389,7 @@ final class TestCaseTest extends WP_MockTestCase
 
         $this->assertTrue($class::testMethod());
 
-        $instance = $this->getMockForAbstractClass(TestCase::class);
+        $instance = new class(__METHOD__) extends WP_Mock\Tools\TestCase{};
         $method = new ReflectionMethod($instance, 'mockStaticMethod');
         if(!version_compare(PHP_VERSION, '8.5', '>=')){
             $method->setAccessible(true);
