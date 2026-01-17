@@ -30,3 +30,5 @@ coverage.xml
 phpunit.local.xml
 .phpunit.local.xml
 /html
+
+/composer.lock
