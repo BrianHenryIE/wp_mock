@@ -13,20 +13,49 @@ jobs:
     strategy:
       matrix:
         include:
+          # PHPUnit 9 - all PHP versions
+          - php: '8.5'
+            phpunit: '^9.6.15'
+            os: 'ubuntu-latest'
+          - php: '8.4'
+            phpunit: '^9.6.15'
+            os: 'ubuntu-latest'
           - php: '8.3'
+            phpunit: '^9.6.15'
             os: 'ubuntu-latest'
           - php: '8.2'
+            phpunit: '^9.6.15'
             os: 'ubuntu-latest'
           - php: '8.1'
+            phpunit: '^9.6.15'
             os: 'ubuntu-latest'
           - php: '8.0'
+            phpunit: '^9.6.15'
             os: 'ubuntu-24.04'
           - php: '7.4'
+            phpunit: '^9.6.15'
             os: 'ubuntu-24.04'
+          # PHPUnit 10 - PHP 8.1+
+          - php: '8.5'
+            phpunit: '^10'
+            os: 'ubuntu-latest'
+          - php: '8.4'
+            phpunit: '^10'
+            os: 'ubuntu-latest'
+          - php: '8.3'
+            phpunit: '^10'
+            os: 'ubuntu-latest'
+          - php: '8.2'
+            phpunit: '^10'
+            os: 'ubuntu-latest'
+          - php: '8.1'
+            phpunit: '^10'
+            os: 'ubuntu-latest'
       fail-fast: false
     env:
       COVERAGE_CACHE_PATH: phpunit-coverage-cache
       PHP_VERSION: ${{ matrix.php }}
+      PHPUNIT_VERSION: ${{ matrix.phpunit }}
 
     steps:
       - uses: actions/checkout@v4
@@ -49,7 +78,9 @@ jobs:
             ${{ runner.os }}-composer-
 
       - name: Install dependencies
-        run: composer install --no-ansi --no-interaction --no-scripts --no-progress --prefer-dist
+        run: |
+          composer install --no-ansi --no-interaction --no-scripts --no-progress --prefer-dist
+          composer require --dev phpunit/phpunit:"${{ matrix.phpunit }}" --no-ansi --no-interaction --no-progress --prefer-dist --with-all-dependencies
 
       - name: Restore phpunit coverage cache
         uses: actions/cache@v4
