@@ -27,6 +27,7 @@ abstract class TestCase extends PhpUnitTestCase
 {
     use AccessInaccessibleClassMembersTrait;
     use MockWordPressObjectsTrait;
+    use TestCasePhpUnit9Compat;
 
     /** @var array<string, Mockery\Mock> */
     protected $mockedStaticMethods = [];
@@ -177,7 +178,7 @@ abstract class TestCase extends PhpUnitTestCase
     {
         $this->__contentFilterCallback = false;
 
-        $annotations = Test::parseTestMethodAnnotations(
+        $annotations = $this->parseTestMethodAnnotations(
             static::class,
             $this->getName(false)
         );
