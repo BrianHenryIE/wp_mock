@@ -440,6 +440,45 @@ class WP_MockTest extends WP_MockTestCase
     }
 
     /**
+     * Regression test for #268 mixing `expectActionAdded()` and `expectActionNotAdded()`.
+     *
+     * Before the fix, the `Functions::type()` keys for both classes collided, so the "not added"
+     * processor replaced the "added" one and the test reported the inverted expectation:
+     * "should be called exactly 0 times but called 1 times".
+     *
+     * @covers \WP_Mock::expectActionAdded()
+     * @covers \WP_Mock::expectActionNotAdded()
+     * @covers \WP_Mock::expectHookAdded()
+     * @covers \WP_Mock::expectHookNotAdded()
+     * @covers \WP_Mock\Functions::type()
+     * @covers \WP_Mock\Hook::safe_offset()
+     *
+     * @runInSeparateProcess
+     * @preserveGlobalState disabled
+     *
+     * @throws ExpectationFailedException|Exception|\Exception
+     */
+    public function testActionNotAddedSameMethodName(): void
+    {
+        WP_Mock::activateStrictMode();
+        WP_Mock::bootstrap();
+
+        WP_Mock::expectActionAdded(
+            'init',
+            array(WP_Mock\Functions::type(SampleClass::class), 'action')
+        );
+
+        WP_Mock::expectActionNotAdded(
+            'init',
+            array(WP_Mock\Functions::type(SampleSubClass::class), 'action')
+        );
+
+        add_action('init', array(new SampleClass(), 'action'));
+
+        $this->assertConditionsMet();
+    }
+
+    /**
      * @covers \WP_Mock::expectActionAdded()
      * @covers \WP_Mock::expectHookAdded()
      * @covers \WP_Mock\Functions::type()
