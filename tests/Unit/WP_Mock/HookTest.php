@@ -70,6 +70,10 @@ final class HookTest extends TestCase
     }
 
     /**
+     * Each Type matcher is created inline and freed as soon as `safe_offset()` returns, which is how
+     * `WP_Mock::expectHookAdded()` uses them. Keys for different classes must still differ, and a real
+     * instance must resolve to the same key as its (already freed) matcher.
+     *
      * @covers \WP_Mock\Hook::safe_offset()
      * @covers \WP_Mock\Functions::type()
      *
@@ -80,29 +84,19 @@ final class HookTest extends TestCase
     {
         Hook::$objects = [];
 
-        $instance = $this->getMockForAbstractClass(Hook::class, [], '', false);
-        $method = $this->getInaccessibleMethod($instance, 'safe_offset');
+        $hookInstance = $this->getMockForAbstractClass(Hook::class, [], '', false);
+        $safeOffsetMethod = $this->getInaccessibleMethod($hookInstance, 'safe_offset');
 
-        $typeKey1 = $method->invokeArgs($instance, [Functions::type(SampleClass::class)]);
-        unset($typeKey1);
-        gc_collect_cycles();
+        $keyCallbackClass = $safeOffsetMethod->invokeArgs($hookInstance, [[Functions::type(SampleClass::class), 'action']]);
+        $keyCallbackSubClass = $safeOffsetMethod->invokeArgs($hookInstance, [[Functions::type(SampleSubClass::class), 'action']]);
 
-        $typeSampleClass = Functions::type(SampleClass::class);
-        $typeSampleSubClass = Functions::type(SampleSubClass::class);
-
-        $keyClass = $method->invokeArgs($instance, [$typeSampleClass]);
-        $keySubClass = $method->invokeArgs($instance, [$typeSampleSubClass]);
-        $keyInstance = $method->invokeArgs($instance, [new SampleClass()]);
-        $keySubInstance = $method->invokeArgs($instance, [new SampleSubClass()]);
-        $keyCallbackClass = $method->invokeArgs($instance, [[$typeSampleClass, 'action']]);
-        $keyCallbackSubClass = $method->invokeArgs($instance, [[$typeSampleSubClass, 'action']]);
-
-        $this->assertNotSame($keyClass, $keySubClass);
-        $this->assertSame($keyClass, $keyInstance);
-        $this->assertSame($keySubClass, $keySubInstance);
         $this->assertNotSame($keyCallbackClass, $keyCallbackSubClass);
-        $this->assertSame((string) $typeSampleClass, $keyClass);
-        $this->assertSame((string) $typeSampleSubClass, $keySubClass);
+
+        $keyInstance = $safeOffsetMethod->invokeArgs($hookInstance, [[new SampleClass(), 'action']]);
+        $keySubInstance = $safeOffsetMethod->invokeArgs($hookInstance, [[new SampleSubClass(), 'action']]);
+
+        $this->assertSame($keyCallbackClass, $keyInstance);
+        $this->assertSame($keyCallbackSubClass, $keySubInstance);
 
         Hook::$objects = [];
     }
