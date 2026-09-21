@@ -22,7 +22,10 @@ abstract class Hook
     /** @var array<mixed> collection of processors */
     protected $processors = [];
 
-    /** @var array<string> collection of objects mapped to their Type hashes */
+    /**
+     * @var array<string, string> type names passed to {@see Functions::type()} mapped to the matcher's
+     *      string form ("<TypeName>"), so a real instance and its Type matcher share a safe_offset key
+     */
     public static array $objects = [];
 
     /**
@@ -65,8 +68,8 @@ abstract class Hook
         }
 
         if (is_object($value)) {
-            // Type matchers use a stable string key so multiple Functions::type() expectations
-            // do not collide when PHP reuses spl_object_hash after GC.
+            // Type matchers are keyed by their string form ("<ClassName>"), which is unique per type name
+            // and is the same value Functions::type() stores in static::$objects for real instances below.
             if ($value instanceof Type) {
                 return (string) $value;
             }
