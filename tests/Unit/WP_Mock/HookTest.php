@@ -23,6 +23,25 @@ final class HookTest extends TestCase
     use AccessInaccessibleClassMembersTrait;
 
     /**
+     * This test case does not extend {@see \WP_Mock\Tools\TestCase}, so {@see \WP_Mock::setUp()} and
+     * {@see \WP_Mock::tearDown()} never run. Clear the shared Type map here so entries written by
+     * {@see Functions::type()} cannot leak between tests, even when an assertion fails.
+     */
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        Hook::$objects = [];
+    }
+
+    protected function tearDown(): void
+    {
+        Hook::$objects = [];
+
+        parent::tearDown();
+    }
+
+    /**
      * @covers \WP_Mock\Hook::safe_offset()
      * @dataProvider providerSafeOffset
      *
@@ -82,8 +101,6 @@ final class HookTest extends TestCase
      */
     public function testTypeSafeOffsetIsStableAcrossMultipleTypeCalls(): void
     {
-        Hook::$objects = [];
-
         $hookInstance = $this->getMockForAbstractClass(Hook::class, [], '', false);
         $safeOffsetMethod = $this->getInaccessibleMethod($hookInstance, 'safe_offset');
 
@@ -97,7 +114,5 @@ final class HookTest extends TestCase
 
         $this->assertSame($keyCallbackClass, $keyInstance);
         $this->assertSame($keyCallbackSubClass, $keySubInstance);
-
-        Hook::$objects = [];
     }
 }
