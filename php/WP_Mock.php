@@ -118,6 +118,7 @@ class WP_Mock
 
             self::$event_manager    = new \WP_Mock\EventManager();
             self::$functionsManager = new \WP_Mock\Functions();
+            \WP_Mock\Hook::$objects = [];
         } else {
             self::bootstrap();
         }

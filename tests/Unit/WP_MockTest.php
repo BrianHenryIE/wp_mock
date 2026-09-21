@@ -12,6 +12,8 @@ use WP_Mock\Tests\WP_MockTestCase;
 use WP_Mock\Tests\Mocks\SampleClass;
 use WP_Mock\Tests\Mocks\SampleSubClass;
 use WP_Mock\Matcher\AnyInstance;
+use WP_Mock\Hook;
+use WP_Mock\Functions;
 use WP_Mock\DeprecatedMethodListener;
 use WP_Mock\Tests\Unit\WP_Mock\TestClass;
 use Mockery\Exception\InvalidCountException;
@@ -532,5 +534,111 @@ class WP_MockTest extends WP_MockTestCase
         add_filter('the_content', array(new SampleSubClass(), 'action'));
 
         $this->assertConditionsMet();
+    }
+
+    /**
+     * `Hook::$objects` was reset only in `WP_Mock::tearDown()`, not in `WP_Mock::setUp()`.
+     *
+     * PHPUnit always runs `tearDown()` even when the test body throws, so the leak needs a
+     * `tearDown()` override that fails before reaching `parent::tearDown()`. The entry then
+     * survives into the next test, where two distinct instances of the leaked class collapse
+     * to a single processor key and the first expectation is silently overwritten.
+     *
+     * @covers \WP_Mock::setUp()
+     * @covers \WP_Mock::tearDown()
+     *
+     * @runInSeparateProcess
+     * @preserveGlobalState disabled
+     *
+     * @throws ExpectationFailedException|InvalidArgumentException|\Exception
+     */
+    public function testExceptionSkipsTearDown(): void
+    {
+        WP_Mock::bootstrap();
+
+        $leakyTest = new class('testPopulatesHookObjectsThenFailsInTearDown') extends WP_Mock\Tools\TestCase {
+            /**
+             * @throws ExpectationFailedException|InvalidArgumentException|Exception
+             */
+            public function testPopulatesHookObjectsThenFailsInTearDown(): void
+            {
+                Functions::type(SampleClass::class);
+
+                $this->assertArrayHasKey(SampleClass::class, Hook::$objects);
+            }
+
+            /**
+             * Simulates user cleanup that throws before WP_Mock gets to reset its statics.
+             *
+             * @throws \RuntimeException
+             */
+            public function tearDown(): void
+            {
+                throw new \RuntimeException('cleanup failed before parent::tearDown()');
+            }
+        };
+
+        $victimTest = new class('testDistinctInstancesOfSameClassAreDistinctCallbacks') extends WP_Mock\Tools\TestCase {
+            /**
+             * @return void
+             */
+            public function testDistinctInstancesOfSameClassAreDistinctCallbacks(): void
+            {
+                $first = new SampleClass();
+                $second = new SampleClass();
+
+                WP_Mock::expectActionAdded('init', [$first, 'action']);
+                WP_Mock::expectActionAdded('init', [$second, 'action']);
+
+                add_action('init', [$first, 'action']);
+                add_action('init', [$second, 'action']);
+
+                $this->assertConditionsMet();
+            }
+        };
+
+        $leakyResult = $leakyTest->run();
+
+        $this->assertSame(1, $leakyResult->errorCount(), 'Leaky tearDown() should be recorded as an error');
+        $this->assertArrayHasKey(SampleClass::class, Hook::$objects, 'Entry should have leaked past tearDown()');
+
+        $victimResult = $victimTest->run();
+
+        $this->assertTrue(
+            $victimResult->wasSuccessful(),
+            'A leaked Hook::$objects entry broke the next test: '.implode(' | ', array_map(
+                static fn($failure) => $failure->thrownException()->getMessage(),
+                array_merge($victimResult->failures(), $victimResult->errors())
+            ))
+        );
+    }
+
+    /**
+     * Unit test similar to {@see ::testExceptionSkipsTearDown()}.
+     *
+     * @covers \WP_Mock::setUp()
+     * @covers \WP_Mock::tearDown()
+     * @covers \WP_Mock\Functions::type()
+     *
+     * @runInSeparateProcess
+     * @preserveGlobalState disabled
+     *
+     * @throws ExpectationFailedException|InvalidArgumentException|Exception
+     */
+    public function testSetUpAndTearDownResetHookObjects(): void
+    {
+        WP_Mock::bootstrap();
+
+        Functions::type(SampleClass::class);
+        $this->assertArrayHasKey(SampleClass::class, Hook::$objects);
+
+        WP_Mock::tearDown();
+        $this->assertSame([], Hook::$objects, 'tearDown() should clear Hook::$objects');
+
+        Functions::type(SampleClass::class);
+        $this->assertArrayHasKey(SampleClass::class, Hook::$objects);
+
+        WP_Mock::setUp();
+        $this->assertSame([], Hook::$objects, 'setUp() should clear Hook::$objects');
     }
 }
