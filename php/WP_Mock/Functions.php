@@ -416,7 +416,7 @@ EOF;
         $type = Mockery::type($expected);
         // Record the matcher's string form ("<ClassName>") so that Hook::safe_offset() maps a real
         // instance of $expected to the same key it returns for this Type matcher.
-        Filter::$objects[ $expected ] = (string) $type;
+        Hook::$objects[ $expected ] = (string) $type;
 
         return $type;
     }

@@ -69,15 +69,15 @@ abstract class Hook
 
         if (is_object($value)) {
             // Type matchers are keyed by their string form ("<ClassName>"), which is unique per type name
-            // and is the same value Functions::type() stores in static::$objects for real instances below.
+            // and is the same value Functions::type() stores in self::$objects for real instances below.
             if ($value instanceof Type) {
                 return (string) $value;
             }
 
             $class = get_class($value);
 
-            if (isset(static::$objects[$class]) && is_string(static::$objects[$class])) {
-                return static::$objects[$class];
+            if (isset(self::$objects[$class]) && is_string(self::$objects[$class])) {
+                return self::$objects[$class];
             }
 
             return spl_object_hash($value);
