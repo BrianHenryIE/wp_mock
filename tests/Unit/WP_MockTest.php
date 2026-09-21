@@ -407,36 +407,57 @@ class WP_MockTest extends WP_MockTestCase
     }
 
     /**
+     * Regression test for #268: two `Functions::type()` expectations for different classes on the
+     * same hook must not overwrite each other, whether or not the method names match.
+     *
      * @covers \WP_Mock::expectActionAdded()
+     * @covers \WP_Mock::expectFilterAdded()
      * @covers \WP_Mock::expectHookAdded()
      * @covers \WP_Mock\Functions::type()
      * @covers \WP_Mock\Hook::safe_offset()
+     * @dataProvider providerMultipleTypeExpectationsOnSameHook
      *
      * @runInSeparateProcess
      * @preserveGlobalState disabled
      *
+     * @param string $expectMethod the WP_Mock expectation method, e.g. 'expectActionAdded'
+     * @param callable-string $addFunction the WordPress function under test, e.g. 'add_action'
+     * @param string $hookName the hook name
+     * @param string $secondMethod the method name registered by the SampleSubClass callback
      * @return void
      * @throws ExpectationFailedException|Exception|\Exception
      */
-    public function testMultipleActionsTypeSameMethod(): void
-    {
+    public function testMultipleTypeExpectationsOnSameHook(
+        string $expectMethod,
+        string $addFunction,
+        string $hookName,
+        string $secondMethod
+    ): void {
         WP_Mock::activateStrictMode();
         WP_Mock::bootstrap();
 
-        WP_Mock::expectActionAdded(
-            'init',
+        WP_Mock::$expectMethod(
+            $hookName,
             array(WP_Mock\Functions::type(SampleClass::class), 'action')
         );
 
-        WP_Mock::expectActionAdded(
-            'init',
-            array(WP_Mock\Functions::type(SampleSubClass::class), 'action')
+        WP_Mock::$expectMethod(
+            $hookName,
+            array(WP_Mock\Functions::type(SampleSubClass::class), $secondMethod)
         );
 
-        add_action('init', array(new SampleClass(), 'action'));
-        add_action('init', array(new SampleSubClass(), 'action'));
+        $addFunction($hookName, array(new SampleClass(), 'action'));
+        $addFunction($hookName, array(new SampleSubClass(), $secondMethod));
 
         $this->assertConditionsMet();
+    }
+
+    /** @see testMultipleTypeExpectationsOnSameHook */
+    public static function providerMultipleTypeExpectationsOnSameHook(): Generator
+    {
+        yield 'actions, same method' => ['expectActionAdded', 'add_action', 'init', 'action'];
+        yield 'actions, distinct method' => ['expectActionAdded', 'add_action', 'init', 'action2'];
+        yield 'filters, same method' => ['expectFilterAdded', 'add_filter', 'the_content', 'action'];
     }
 
     /**
@@ -481,39 +502,6 @@ class WP_MockTest extends WP_MockTestCase
     /**
      * @covers \WP_Mock::expectActionAdded()
      * @covers \WP_Mock::expectHookAdded()
-     * @covers \WP_Mock\Functions::type()
-     * @covers \WP_Mock\Hook::safe_offset()
-     *
-     * @runInSeparateProcess
-     * @preserveGlobalState disabled
-     *
-     * @return void
-     * @throws ExpectationFailedException|Exception|\Exception
-     */
-    public function testMultipleActionsTypeDistinctMethod(): void
-    {
-        WP_Mock::activateStrictMode();
-        WP_Mock::bootstrap();
-
-        WP_Mock::expectActionAdded(
-            'init',
-            array(WP_Mock\Functions::type(SampleClass::class), 'action')
-        );
-
-        WP_Mock::expectActionAdded(
-            'init',
-            array(WP_Mock\Functions::type(SampleSubClass::class), 'action2')
-        );
-
-        add_action('init', array(new SampleClass(), 'action'));
-        add_action('init', array(new SampleSubClass(), 'action2'));
-
-        $this->assertConditionsMet();
-    }
-
-    /**
-     * @covers \WP_Mock::expectActionAdded()
-     * @covers \WP_Mock::expectHookAdded()
      *
      * @runInSeparateProcess
      * @preserveGlobalState disabled
@@ -538,39 +526,6 @@ class WP_MockTest extends WP_MockTestCase
 
         add_action('init', array(new SampleClass(), 'action'));
         add_action('init', array(new SampleSubClass(), 'action'));
-
-        $this->assertConditionsMet();
-    }
-
-    /**
-     * @covers \WP_Mock::expectFilterAdded()
-     * @covers \WP_Mock::expectHookAdded()
-     * @covers \WP_Mock\Functions::type()
-     * @covers \WP_Mock\Hook::safe_offset()
-     *
-     * @runInSeparateProcess
-     * @preserveGlobalState disabled
-     *
-     * @return void
-     * @throws ExpectationFailedException|Exception|\Exception
-     */
-    public function testMultipleFiltersTypeSameMethod(): void
-    {
-        WP_Mock::activateStrictMode();
-        WP_Mock::bootstrap();
-
-        WP_Mock::expectFilterAdded(
-            'the_content',
-            array(WP_Mock\Functions::type(SampleClass::class), 'action')
-        );
-
-        WP_Mock::expectFilterAdded(
-            'the_content',
-            array(WP_Mock\Functions::type(SampleSubClass::class), 'action')
-        );
-
-        add_filter('the_content', array(new SampleClass(), 'action'));
-        add_filter('the_content', array(new SampleSubClass(), 'action'));
 
         $this->assertConditionsMet();
     }
