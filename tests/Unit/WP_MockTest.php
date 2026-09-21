@@ -680,4 +680,33 @@ class WP_MockTest extends WP_MockTestCase
         WP_Mock::setUp();
         $this->assertSame([], Hook::$objects, 'setUp() should clear Hook::$objects');
     }
+
+    /**
+     * `Functions::type()` matches the callback object's exact class, not `instanceof`. A subclass
+     * instance must not satisfy an expectation registered for its parent class.
+     *
+     * @covers \WP_Mock::expectActionNotAdded()
+     * @covers \WP_Mock::expectHookNotAdded()
+     * @covers \WP_Mock\Functions::type()
+     * @covers \WP_Mock\Hook::safe_offset()
+     *
+     * @runInSeparateProcess
+     * @preserveGlobalState disabled
+     *
+     * @return void
+     * @throws ExpectationFailedException|Exception|\Exception
+     */
+    public function testTypeMatchesExactClassNotSubclass(): void
+    {
+        WP_Mock::bootstrap();
+
+        WP_Mock::expectActionNotAdded(
+            'init',
+            array(WP_Mock\Functions::type(SampleClass::class), 'action')
+        );
+
+        add_action('init', array(new SampleSubClass(), 'action'));
+
+        $this->assertConditionsMet();
+    }
 }
