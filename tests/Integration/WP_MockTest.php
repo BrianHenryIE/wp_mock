@@ -343,6 +343,9 @@ class WP_MockTest extends WP_MockTestCase
      * @see WP_Mock\Functions::createFunction()
      * @dataProvider providerNamedParameters
      *
+    * @runInSeparateProcess
+    * @preserveGlobalState disabled
+     *
      * @param array<int|string, mixed> $expectedArgs the `args` passed to `WP_Mock::userFunction()`
      * @param string $call PHP source of the mocked call, evaluated so the file still parses on PHP 7.4
      * @throws Exception
@@ -352,6 +355,8 @@ class WP_MockTest extends WP_MockTestCase
         if (! version_compare(PHP_VERSION, '8.0', '>=')) {
             $this->markTestSkipped('PHP 8.0 required for named parameters.');
         }
+
+        WP_Mock::bootstrap();
 
         WP_Mock::userFunction('get_option', [
             'times'  => 1,
