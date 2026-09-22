@@ -311,15 +311,11 @@ class Functions
         $namespace = empty($parts) ? '' : 'namespace '.implode('\\', $parts).';'.PHP_EOL;
 
         $functionNamedParameters = '';
-
-        $has_named_parameters = array_reduce( array_keys($functionArgs), function ($carry, $arg) {
-            return $carry && !is_int($arg);
-        }, true);
-
-        if($has_named_parameters){
-            $functionNamedParameters = implode(', ', array_map(fn($name) => '$' . $name, array_keys($functionArgs)));
+        foreach (array_keys($functionArgs) as $k) {
+            if (!is_int($k)) {
+                $functionNamedParameters .= ($functionNamedParameters ? ', ' : '') . '$' . $k;
+            }
         }
-
         $declaration = <<<EOF
 $namespace
 function $name($functionNamedParameters) {
