@@ -337,6 +337,21 @@ class WP_MockTest extends WP_MockTestCase
             eval($php81FirstClassCallableSyntaxPhpString);
         }
 
+        /**
+         * @see https://www.php.net/manual/en/language.enumerations.methods.php
+         * @see https://www.php.net/manual/en/language.enumerations.static-methods.php
+         */
+        if(PHP_VERSION_ID >= 80100) {
+            $php81EnumMethodPhpString = <<<'EOD'
+            WP_Mock::expectActionAdded('wpMockTestAction', array(\WP_Mock\Tests\Mocks\SampleEnum::Code, 'method'));
+            add_action('wpMockTestAction', array(\WP_Mock\Tests\Mocks\SampleEnum::Code, 'method'));
+
+            WP_Mock::expectActionAdded('wpMockTestAction', array(\WP_Mock\Tests\Mocks\SampleEnum::class, 'staticMethod'));
+            add_action('wpMockTestAction', array(\WP_Mock\Tests\Mocks\SampleEnum::class, 'staticMethod'));
+            EOD;
+            eval($php81EnumMethodPhpString);
+        }
+
         WP_Mock::assertHooksAdded();
     }
 

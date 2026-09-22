@@ -23,11 +23,19 @@ class HookedCallback extends Hook
 
         $safe_callback = $this->safe_offset($callback);
 
-        if (is_array($callback)) {
-            $any_instance_callback = array( new AnyInstance($callback[0]), $callback[1] );
-            $safe_any_instance_callback = $this->safe_offset($any_instance_callback);
-            if (! empty($this->processors[ $safe_any_instance_callback ])) {
-                $safe_callback = $safe_any_instance_callback;
+        if (is_array($callback) && count($callback) === 2 && method_exists($callback[0], $callback[1])) {
+            $isEnum = false;
+            if(method_exists(\ReflectionClass::class, 'isEnum')) {
+                $rc = new \ReflectionClass($callback[0]);
+                $isEnum = $rc->isEnum();
+            }
+            $rm = new \ReflectionMethod($callback[0], $callback[1]);
+            if(!$isEnum && !$rm->isStatic()) {
+                $any_instance_callback      = array( new AnyInstance( $callback[0] ), $callback[1] );
+                $safe_any_instance_callback = $this->safe_offset( $any_instance_callback );
+                if ( ! empty( $this->processors[ $safe_any_instance_callback ] ) ) {
+                    $safe_callback = $safe_any_instance_callback;
+                }
             }
         }
 
