@@ -341,30 +341,42 @@ class WP_MockTest extends WP_MockTestCase
      *
      * @covers \WP_Mock::userFunction()
      * @see WP_Mock\Functions::createFunction()
+     * @dataProvider providerNamedParameters
      *
+     * @param array<int|string, mixed> $expectedArgs the `args` passed to `WP_Mock::userFunction()`
+     * @param string $call PHP source of the mocked call, evaluated so the file still parses on PHP 7.4
      * @throws Exception
      */
-    public function testCanMockNamedParameters(): void {
-
-        if(!version_compare(PHP_VERSION, '8.0', '>=')) {
+    public function testCanMockNamedParameters(array $expectedArgs, string $call): void
+    {
+        if (! version_compare(PHP_VERSION, '8.0', '>=')) {
             $this->markTestSkipped('PHP 8.0 required for named parameters.');
         }
 
-        WP_Mock::userFunction('get_transient', [
+        WP_Mock::userFunction('get_option', [
             'times'  => 1,
-            'args'   => [
-                'transient' => 'my-transient-name',
-            ],
-            'return' => 'the-mocked-transient-value',
+            'args'   => $expectedArgs,
+            'return' => 'the-mocked-value',
         ]);
 
-        // Without this, tests fail on PHP 7.4.
-        // PHP Fatal error:  Uncaught ParseError: syntax error, unexpected ':', expecting ')' in :362
-        $hidePhp8CodeFromOlderVersions = <<<'PHP'
-        return get_transient(transient: 'my-transient-name');
-        PHP;
-
         /** @phpstan-ignore-next-line function "exists" */
-        $this->assertEquals('the-mocked-transient-value', eval($hidePhp8CodeFromOlderVersions));
+        $this->assertEquals('the-mocked-value', eval("return $call;"));
+    }
+
+    /** @see testCanMockNamedParameters */
+    public static function providerNamedParameters(): Generator
+    {
+        yield 'named, declared order' => [
+            ['option' => 'my_option_name', 'default_value' => false],
+            "get_option(option: 'my_option_name', default_value: false)",
+        ];
+        yield 'named, reversed order' => [
+            ['option' => 'my_option_name', 'default_value' => false],
+            "get_option(default_value: false, option: 'my_option_name')",
+        ];
+        yield 'positional then named' => [
+            ['my_option_name', 'default_value' => false],
+            "get_option('my_option_name', default_value: false)",
+        ];
     }
 }
