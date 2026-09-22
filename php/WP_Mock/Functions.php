@@ -312,10 +312,10 @@ class Functions
 
         $functionNamedParameters = '';
         foreach (array_keys($functionArgs) as $k) {
-            if (!is_int($k)) {
-                $functionNamedParameters .= ($functionNamedParameters ? ', ' : '') . '$' . $k;
-            }
+            $functionNamedParameters .= ($functionNamedParameters ? ', ' : '');
+            $functionNamedParameters .= sprintf('$%s%s', is_int($k) ? '__positional_' : '', $k);
         }
+
         $declaration = <<<EOF
 $namespace
 function $name($functionNamedParameters) {
