@@ -26,11 +26,21 @@ class HookedCallback extends Hook
         if (is_array($callback) && count($callback) === 2 && method_exists($callback[0], $callback[1])) {
             $isEnum = false;
             if(method_exists(\ReflectionClass::class, 'isEnum')) {
-                $rc = new \ReflectionClass($callback[0]);
-                $isEnum = $rc->isEnum();
+                try {
+                    $rc = new \ReflectionClass($callback[0]);
+                    /** @phpstan-ignore-next-line (requires PHP 8.1+) */
+                    $isEnum = $rc->isEnum();
+                } catch (\ReflectionException $e) {
+                    // Unreachable: method_exists() above guarantees the class exists.
+                }
             }
-            $rm = new \ReflectionMethod($callback[0], $callback[1]);
-            if(!$isEnum && !$rm->isStatic()) {
+            try {
+                $isStatic = (new \ReflectionMethod($callback[0], $callback[1]))->isStatic();
+            } catch (\ReflectionException $e) {
+                // Unreachable: method_exists() above guarantees the method exists.
+                $isStatic = false;
+            }
+            if(!$isEnum && !$isStatic) {
                 $any_instance_callback      = array( new AnyInstance( $callback[0] ), $callback[1] );
                 $safe_any_instance_callback = $this->safe_offset( $any_instance_callback );
                 if ( ! empty( $this->processors[ $safe_any_instance_callback ] ) ) {

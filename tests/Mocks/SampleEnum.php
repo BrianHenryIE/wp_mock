@@ -10,7 +10,7 @@ enum SampleEnum
     {
     }
 
-    public function staticMethod(): void
+    public static function staticMethod(): void
     {
     }
 }

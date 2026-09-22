@@ -11,6 +11,9 @@ parameters:
 	paths:
 		- php
 		- tests
+	excludePaths:
+		# Enum syntax; phpstan analyses as PHP 7.4 (composer platform config). Only loaded at runtime on 8.1+.
+		- tests/Mocks/SampleEnum.php
 	bootstrapFiles:
 		- vendor/php-stubs/wordpress-globals/wordpress-globals.php
 		- vendor/php-stubs/wordpress-stubs/wordpress-stubs.php
