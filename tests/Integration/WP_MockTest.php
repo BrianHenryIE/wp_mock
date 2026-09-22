@@ -337,7 +337,9 @@ class WP_MockTest extends WP_MockTestCase
     }
 
     /**
-     * Fix "Error : Unknown named parameter $transient" when passing named parameters in the argument list.
+     * Fix "Error : Unknown named parameter $x" when passing named parameters in the argument list.
+     *
+     * @see https://wiki.php.net/rfc/named_params
      *
      * @covers \WP_Mock::userFunction()
      * @see WP_Mock\Functions::createFunction()
