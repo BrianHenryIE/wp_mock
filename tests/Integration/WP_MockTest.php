@@ -314,6 +314,13 @@ class WP_MockTest extends WP_MockTestCase
         add_action('wpMockTestAction', 'wpMockTestFunction', 10, 2);
         add_filter('wpMockTestFilter', 'wpMockTestFunction', 10, 2);
 
+        WP_Mock::expectActionAdded('wpMockTestAction', array(\WP_Mock\Tests\Mocks\SampleClass::class, 'staticMethod'));
+        add_action('wpMockTestAction', array(\WP_Mock\Tests\Mocks\SampleClass::class, 'staticMethod'));
+
+        $sampleClassInstance = new \WP_Mock\Tests\Mocks\SampleClass();
+        WP_Mock::expectActionAdded('wpMockTestAction', array($sampleClassInstance, 'action'), 10, 2);
+        add_action('wpMockTestAction', array($sampleClassInstance, 'action'), 10, 2);
+
         WP_Mock::assertHooksAdded();
     }
 

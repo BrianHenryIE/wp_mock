@@ -7,4 +7,8 @@ class SampleClass
     public function action(): void
     {
     }
+
+    public static function staticMethod(): void
+    {
+    }
 }
