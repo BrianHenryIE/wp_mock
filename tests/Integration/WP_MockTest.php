@@ -348,6 +348,9 @@ class WP_MockTest extends WP_MockTestCase
 
             WP_Mock::expectActionAdded('wpMockTestAction', array(\WP_Mock\Tests\Mocks\SampleEnum::class, 'staticMethod'));
             add_action('wpMockTestAction', array(\WP_Mock\Tests\Mocks\SampleEnum::class, 'staticMethod'));
+
+            WP_Mock::expectActionAdded('wpMockTestAction', array(\WP_Mock\Functions::type(\WP_Mock\Tests\Mocks\SampleEnum::class), 'method'));
+            add_action('wpMockTestAction', array(\WP_Mock\Tests\Mocks\SampleEnum::Code, 'method'));
             EOD;
             eval($php81EnumMethodPhpString);
         }
