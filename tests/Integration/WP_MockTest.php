@@ -321,6 +321,22 @@ class WP_MockTest extends WP_MockTestCase
         WP_Mock::expectActionAdded('wpMockTestAction', array($sampleClassInstance, 'action'), 10, 2);
         add_action('wpMockTestAction', array($sampleClassInstance, 'action'), 10, 2);
 
+        /**
+         * PHP 8.1 First Class Callable – `$instance->method( ... )`.
+         *
+         * If we use PHP 8.1 syntax in this file it will fail to parse when run under older versions, so we
+         * will use `eval()` for now.
+         *
+         * @see https://www.php.net/manual/en/functions.first_class_callable_syntax.php
+         */
+        if(PHP_VERSION_ID >= 80100) {
+            $php81FirstClassCallableSyntaxPhpString = <<<'EOD'
+            WP_Mock::expectActionAdded('wpMockTestAction', $sampleClassInstance->action( ... ), 10, 2);
+            add_action('wpMockTestAction', $sampleClassInstance->action( ... ), 10, 2);
+            EOD;
+            eval($php81FirstClassCallableSyntaxPhpString);
+        }
+
         WP_Mock::assertHooksAdded();
     }
 
